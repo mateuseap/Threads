@@ -14,6 +14,7 @@ void *gerarSenhas(void *arg){
     char temp[] = "0000000000";
     for(long long int i = threadID; i < 1e10; i+=T_THREADS){
         if(senhaEncontrada){
+            free(arg);
             pthread_exit(NULL);
         }
         j = 9;
