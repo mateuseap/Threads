@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define T_THREADS 4
+#define T_THREADS 8
 char senha[] = "4444444444";
 bool senhaEncontrada = false;
 
@@ -37,7 +37,7 @@ int main(){
     int *ids[T_THREADS];
 
     for(int i = 0; i < T_THREADS; i++){
-        ids[i] = (int) malloc(sizeof(int));
+        ids[i] = (int*) malloc(sizeof(int));
         *ids[i] = i;
         if((pthread_create(&threads[i], NULL, &gerarSenhas, (void*)ids[i])) != 0){
             perror("Failed to create thread");
