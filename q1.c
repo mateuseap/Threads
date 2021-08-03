@@ -29,7 +29,7 @@ int main() {
     int *ids[qtdT]; //Vetor com o ID das Threads
   
     for(int i = 0; i < qtdT; i++){
-        ids[i] = (int) malloc(sizeof(int));
+        ids[i] = (int*) malloc(sizeof(int));
         *ids[i] = i;
         if(pthread_create(&threads[i], NULL, &decrement, (void*)ids[i]) != 0){ //Criando uma Thread e passando a função 'decrement' como parâmetro e o ID da Thread como argumento
             perror("Failed to create thread");
