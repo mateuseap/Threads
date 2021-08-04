@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #define T_THREADS 8
-char senha[] = "4444444444";
+char senha[] = "1234320985";
 bool senhaEncontrada = false;
 
 void *gerarSenhas(void *arg){
@@ -42,7 +42,7 @@ int main(){
         if((pthread_create(&threads[i], NULL, &gerarSenhas, (void*)ids[i])) != 0){
             perror("Failed to create thread");
         }
-    }   
+    }
     for(int i = 0; i < T_THREADS; i++){
         if(pthread_join(threads[i], NULL) != 0){
             perror("Failed to join thread");
