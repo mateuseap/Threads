@@ -20,6 +20,7 @@ void *decrement(void *arg){
 }
 
 int main() {
+    
     int qtdT;
 
     printf("Escolha quantas threads você deseja criar: ");
