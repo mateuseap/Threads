@@ -1,69 +1,80 @@
-#define _XOPEN_SOURCE 600 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include <string.h>
 #include <pthread.h>
 
-pthread_barrier_t barrier;
-int n, qtdT, offset = 0, *check, i = 0;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t lock;
 
-void *encontrarPrimo(void *arg){
-    int threadID = *((int*)arg), count = 0, primo = 1, liberado = 0;
-    while(n > i){
-        check[threadID] = -1;
-        for(int k = 1; k < sqrt(threadID+offset); k++){
-            if((threadID+offset)%k == 0){
-                count++;                                                             
-            }
-            if(count > 2){
-                primo = 0;
-                break;
-            }
+int atual_primo = 1;             // Topo da fila de números
+int N_max;                        // Quantidade de números que serão testados
+int qtd_threads = 0;           // Quantidade de threads definidas
+int qtd_execs = 0;              // Quantidade de execuções
+int n_primos = 0;            // Quantidade de números primos encontrados
+int N_enesimo_Primo;
+
+int primo(int value) {
+    int i = 2;
+    while (i < value && value%i != 0) i++;
+    return i == value;
+} 
+
+void *thread_fn(void *threadid) {
+    int *id = (int*) threadid; // Vem como argumento da thread
+    int valor = 0;            // Pega do espaço compartilhado
+    int res = 0;
+    while (n_primos + 1 <= N_max) {
+        // Tranca o mutex, pega um valor para calcular e soma
+        // para a próxima thread executar o próximo numero
+        pthread_mutex_lock(&lock);
+        valor = atual_primo;
+        N_enesimo_Primo = valor;
+        atual_primo++;
+        pthread_mutex_unlock(&lock);
+
+        // Calcula se é primo ou não
+        res = primo(valor);
+        
+        // Soma no contador de execuções e caso seja primo soma no contador de primos também 
+        pthread_mutex_lock(&lock);
+        if(res) {
+            n_primos++;
         }
-        if(primo){
-            check[threadID] = threadID+offset;
-        }else{
-            check[threadID] = -777;
-        }
-        if(check[threadID] == threadID+offset){
-            pthread_mutex_lock(&mutex);
-            i++;
-            if(i == n){
-                printf("%d\n", check[i]);
-                pthread_exit(NULL);
-            }
-            pthread_mutex_unlock(&mutex);
-        }
-        pthread_barrier_wait(&barrier);
-        pthread_mutex_lock(&mutex);
-        offset += 1;
-        pthread_mutex_unlock(&mutex);
-        pthread_barrier_wait(&barrier);
+        qtd_execs++;
+        pthread_mutex_unlock(&lock);
+
+        // Espera até as outras threads executarem
+        while (n_primos + 1 <= N_max && qtd_execs < valor + qtd_threads -1);
     }
 }
 
-int main(){
+int main () {
+    int N = 0, T = 0, i = 0;
+
+    int* args = (int *) malloc(sizeof(int));
+    pthread_t* threads = (pthread_t *) malloc(sizeof(pthread_t));
+    
+    pthread_mutex_init(&lock, NULL);
 
     printf("Numero T: ");
-    scanf("%d", &qtdT);
+    scanf("%d", &T);
+
     printf("Numero N: ");
-    scanf("%d", &n);
+    scanf("%d", &N);
 
-    check = (int*) malloc(sizeof(int)*qtdT);
-    pthread_t threads[qtdT];
-    pthread_barrier_init(&barrier, NULL, qtdT);
-    int *ids[qtdT];
-
-    for(int i = 0; i < qtdT; i++){
-        ids[i] = (int*) malloc(sizeof(int));
-        *ids[i] = i;
-        if((pthread_create(&threads[i], NULL, &encontrarPrimo, (void*)ids[i])) != 0){
-            perror("Failed to create thread");
-        }
+    N_max = N;
+    qtd_threads = T;
+    args = (int *) realloc(args, T * sizeof(int));
+    threads = (pthread_t *) realloc(threads, T * sizeof(pthread_t));
+    for (i = 0; i < T; i++) {
+        args[i] = i;
+        pthread_create(&(threads[i]), NULL, thread_fn, &(args[i]));
     }
+    for (i = 0; i < T; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    
+    pthread_mutex_destroy(&lock);
 
-    pthread_exit(NULL);
-    return 0; 
+    printf("N-enesimo numero primo: %d\n", N_enesimo_Primo);
+
+    return 0;
 }
