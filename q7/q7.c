@@ -66,6 +66,9 @@ void *mergeSort(void *arg){
         if(pthread_join(threads[2], NULL) != 0){
             perror("Failed to join thread");
         } //Esperamos a thread terminar o seu trabalho de dar 'merge' nas partições ordenadas, depois que ela finalizar o seu trabalho já teremos uma parte do vetor ordenada
+        free(dados0);
+        free(dados1);
+        free(dados2); //Liberando a memória
     }
     pthread_exit(NULL);
 }
