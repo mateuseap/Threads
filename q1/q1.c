@@ -15,7 +15,7 @@ void *decrement(void *arg){
         }
         pthread_mutex_unlock(&mutex); //O mutex é destravado, isso significa que alguma outra Thread pode agora decrementar o contador, isso caso ele seja ainda maior do que 0
     }
-    free(arg); //Quando chegamos aqui, significa que o contador chegou a 0, então podemos finalizar a execução da Thread, mas de fazer isso damos free no seu ID (que é basicamente um ponteiro para inteiro) pois não vamos precisar mais dele, garantimos dessa maneira que não haja um vazamento de memória
+    free(arg); //Quando chegamos aqui, significa que o contador chegou a 0, então podemos finalizar a execução da Thread, mas antes de fazer isso damos free no seu ID (que é basicamente um ponteiro para inteiro) pois não vamos precisar mais dele, garantimos dessa maneira que não haja um vazamento de memória
     pthread_exit(NULL); //Finalizamos a execução da Thread
 }
 
